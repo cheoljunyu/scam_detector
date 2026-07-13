@@ -15,6 +15,7 @@
     --accent: #4f8dfd;
     --accent-2: #7c5cff;
     --danger: #ff5c73;
+    --warn: #f5a623;
     --safe: #35d399;
   }
   @media (prefers-color-scheme: light) {
@@ -153,22 +154,98 @@
     font-size: 14px;
     resize: vertical;
   }
+  .field-row {
+    display: flex;
+    gap: 14px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .field-row label {
+    flex: 1 1 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .field-row input {
+    padding: 11px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+  }
   .checker .row {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-top: 14px;
+    gap: 12px;
+    flex-wrap: wrap;
   }
   #result {
     margin-top: 16px;
-    padding: 14px 16px;
+    padding: 16px;
     border-radius: 10px;
     font-size: 14px;
     display: none;
   }
   #result.show { display: block; }
-  #result.risk-high { background: rgba(255,92,115,0.12); border: 1px solid var(--danger); color: var(--danger); }
-  #result.risk-low { background: rgba(53,211,153,0.12); border: 1px solid var(--safe); color: var(--safe); }
+
+  .score-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .score-value { font-size: 22px; font-weight: 700; }
+  .risk-pill {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .risk-pill.low   { background: rgba(53,211,153,0.15); color: var(--safe); border: 1px solid var(--safe); }
+  .risk-pill.medium{ background: rgba(245,166,35,0.15); color: var(--warn); border: 1px solid var(--warn); }
+  .risk-pill.high  { background: rgba(255,92,115,0.15); color: var(--danger); border: 1px solid var(--danger); }
+
+  .score-bar {
+    height: 8px;
+    border-radius: 999px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .score-bar-fill { height: 100%; border-radius: 999px; transition: width 0.2s ease; }
+  .score-bar-fill.low    { background: var(--safe); }
+  .score-bar-fill.medium { background: var(--warn); }
+  .score-bar-fill.high   { background: var(--danger); }
+
+  .signal-list { list-style: none; margin: 0 0 4px; padding: 0; }
+  .signal-list li {
+    display: flex;
+    gap: 8px;
+    padding: 6px 0;
+    font-size: 13.5px;
+    color: var(--text);
+    border-top: 1px solid var(--border);
+  }
+  .signal-list li:first-child { border-top: none; }
+  .signal-list li .pts { color: var(--text-dim); min-width: 34px; }
+  .other-flags {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+    font-size: 13px;
+    color: var(--text-dim);
+  }
 
   section.features {
     padding: 72px 0;
@@ -190,6 +267,7 @@
   @media (max-width: 760px) {
     .grid { grid-template-columns: 1fr; }
     h1 { font-size: 34px; }
+    .queue-table th:nth-child(3), .queue-table td:nth-child(3) { display: none; }
   }
   .card {
     background: var(--card);
@@ -207,6 +285,41 @@
   }
   .card h3 { margin: 0 0 8px; font-size: 16px; }
   .card p { margin: 0; color: var(--text-dim); font-size: 14px; }
+
+  .queue-wrap {
+    max-width: 820px;
+    margin: 0 auto;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 8px;
+  }
+  table.queue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  .queue-table th, .queue-table td {
+    text-align: left;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .queue-table th { color: var(--text-dim); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .queue-table tr:last-child td { border-bottom: none; }
+  .queue-score {
+    font-weight: 700;
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+  }
+  .queue-empty {
+    text-align: center;
+    color: var(--text-dim);
+    padding: 32px 16px;
+  }
+  .queue-actions { display: flex; justify-content: flex-end; padding: 12px 6px 4px; }
 
   footer {
     border-top: 1px solid var(--border);
@@ -227,6 +340,7 @@
     </div>
     <nav class="links">
       <a href="#checker">Checker</a>
+      <a href="#queue">Queue</a>
       <a href="#features">Features</a>
       <a href="https://github.com/cheoljunyu/scam_detector">GitHub</a>
     </nav>
@@ -248,13 +362,42 @@
 
     <div class="checker" id="checker">
       <h3>Quick scam check</h3>
-      <p class="hint">Paste a listing description or seller message below.</p>
+      <p class="hint">Paste a listing description or seller message, and add what you know about the seller.</p>
       <textarea id="listingInput" placeholder="e.g. &quot;Item ships from overseas, pay via wire transfer only, price is way below market...&quot;"></textarea>
+
+      <div class="field-row">
+        <label>Seller account age (days)
+          <input type="number" id="accountAge" min="0" placeholder="e.g. 5" />
+        </label>
+        <label>Seller review count
+          <input type="number" id="reviewCount" min="0" placeholder="e.g. 0" />
+        </label>
+      </div>
+
       <div class="row">
         <span class="hint" style="margin:0;">This is a simple demo, not a substitute for caution.</span>
         <button class="btn btn-primary" onclick="checkListing()">Check for red flags</button>
       </div>
       <div id="result"></div>
+    </div>
+  </section>
+
+  <section class="features container" id="queue">
+    <div class="section-head">
+      <h2>Flagged listing queue</h2>
+      <p>Checks that score 50+ land here for a reviewer to triage, ranked by risk score.</p>
+    </div>
+    <div class="queue-wrap">
+      <div id="queueEmpty" class="queue-empty">No flagged listings yet — run a check above.</div>
+      <table class="queue-table" id="queueTable" style="display:none;">
+        <thead>
+          <tr><th>Score</th><th>Listing</th><th>Signals</th><th>Checked</th></tr>
+        </thead>
+        <tbody id="queueBody"></tbody>
+      </table>
+      <div class="queue-actions" id="queueActions" style="display:none;">
+        <button class="btn btn-secondary" onclick="clearQueue()">Clear queue</button>
+      </div>
     </div>
   </section>
 
@@ -265,34 +408,34 @@
     </div>
     <div class="grid">
       <div class="card">
+        <div class="icon">🧬</div>
+        <h3>Duplicate posts</h3>
+        <p>Near-identical wording to a listing seen recently — especially reposted within minutes — signals a scam pattern in circulation.</p>
+      </div>
+      <div class="card">
         <div class="icon">💸</div>
-        <h3>Off-platform payment requests</h3>
-        <p>Wire transfers, gift cards, or crypto-only payments are classic pressure tactics to avoid buyer protection.</p>
+        <h3>New account + upfront payment</h3>
+        <p>Accounts under two weeks old asking to be paid before handoff are weighted as high risk.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🕒</div>
+        <h3>Account age</h3>
+        <p>Younger accounts carry more composite-score weight, even without other red flags present.</p>
+      </div>
+      <div class="card">
+        <div class="icon">⭐</div>
+        <h3>Review history</h3>
+        <p>Zero or near-zero seller ratings raise the risk score — there's no track record to trust.</p>
       </div>
       <div class="card">
         <div class="icon">⚡</div>
         <h3>Urgency &amp; pressure</h3>
-        <p>"Buy now or lose it" messaging is designed to short-circuit careful thinking.</p>
-      </div>
-      <div class="card">
-        <div class="icon">🏷️</div>
-        <h3>Too-good-to-be-true pricing</h3>
-        <p>Prices far below market value are a strong signal of a bait listing.</p>
-      </div>
-      <div class="card">
-        <div class="icon">🌍</div>
-        <h3>Shipping &amp; location mismatches</h3>
-        <p>Sellers claiming local pickup who suddenly "must ship from overseas" are a red flag.</p>
-      </div>
-      <div class="card">
-        <div class="icon">👤</div>
-        <h3>Thin or new profiles</h3>
-        <p>Accounts with no history, reviews, or verification carry more risk.</p>
+        <p>"Buy now or lose it" messaging is designed to short-circuit careful thinking. (Noted, not scored.)</p>
       </div>
       <div class="card">
         <div class="icon">🔗</div>
         <h3>External links</h3>
-        <p>Requests to move the conversation to another app or site often precede a scam attempt.</p>
+        <p>Requests to move the conversation to another app or site often precede a scam attempt. (Noted, not scored.)</p>
       </div>
     </div>
   </section>
@@ -305,38 +448,220 @@
 </footer>
 
 <script>
-  const RED_FLAGS = [
-    { pattern: /wire transfer|western union|moneygram/i, label: "requests wire transfer / money order" },
-    { pattern: /gift card/i, label: "requests payment via gift cards" },
-    { pattern: /crypto|bitcoin|usdt/i, label: "requests crypto-only payment" },
-    { pattern: /overseas|abroad|out of (the )?country/i, label: "seller/item is overseas" },
-    { pattern: /urgent|hurry|act now|limited time|today only/i, label: "creates artificial urgency" },
-    { pattern: /no returns|no refunds/i, label: "no returns or refunds allowed" },
-    { pattern: /whatsapp|telegram|text me directly/i, label: "wants to move off-platform" },
-    { pattern: /shipping agent|shipping company will handle/i, label: "unusual shipping arrangement" },
+  const QUEUE_KEY = 'scamQueue';
+  const SEEN_KEY = 'scamSeenListings';
+  const FLAG_THRESHOLD = 50;
+  const DUP_WINDOW_MS = 10 * 60 * 1000; // 10 minutes = "clustered upload times"
+
+  // Payment/off-platform patterns feed the "new account + upfront payment" signal.
+  const PAYMENT_FLAGS = [
+    { pattern: /wire transfer|western union|moneygram/i, label: 'requests wire transfer / money order' },
+    { pattern: /gift card/i, label: 'requests payment via gift cards' },
+    { pattern: /crypto|bitcoin|usdt/i, label: 'requests crypto-only payment' },
+    { pattern: /pay(ment)?\s*(upfront|up front|before|first|in advance)/i, label: 'demands payment before handoff' },
   ];
 
+  // Extra patterns shown for context but not part of the composite score.
+  const OTHER_FLAGS = [
+    { pattern: /overseas|abroad|out of (the )?country/i, label: 'seller/item is overseas' },
+    { pattern: /urgent|hurry|act now|limited time|today only/i, label: 'creates artificial urgency' },
+    { pattern: /no returns|no refunds/i, label: 'no returns or refunds allowed' },
+    { pattern: /whatsapp|telegram|text me directly/i, label: 'wants to move off-platform' },
+    { pattern: /shipping agent|shipping company will handle/i, label: 'unusual shipping arrangement' },
+  ];
+
+  function loadJSON(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch (e) {
+      return fallback;
+    }
+  }
+  function saveJSON(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+
+  function normalize(text) {
+    return text.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean);
+  }
+
+  function jaccardSimilarity(aWords, bWords) {
+    const a = new Set(aWords);
+    const b = new Set(bWords);
+    if (a.size === 0 || b.size === 0) return 0;
+    let intersection = 0;
+    a.forEach(w => { if (b.has(w)) intersection++; });
+    const union = new Set([...a, ...b]).size;
+    return intersection / union;
+  }
+
+  function scoreDuplicate(text, now) {
+    const seen = loadJSON(SEEN_KEY, []);
+    const words = normalize(text);
+    let best = { sim: 0, ts: null };
+    for (const entry of seen) {
+      const sim = jaccardSimilarity(words, normalize(entry.text));
+      if (sim > best.sim) best = { sim, ts: entry.ts };
+    }
+    let pts = 0, label = null;
+    if (best.sim >= 0.6) {
+      if (best.ts && (now - best.ts) <= DUP_WINDOW_MS) {
+        pts = 25; label = 'near-identical post seen minutes ago (repost clustering)';
+      } else {
+        pts = 18; label = 'near-identical wording to a previously checked post';
+      }
+    } else if (best.sim >= 0.35) {
+      pts = 10; label = 'similar wording to a previously checked post';
+    }
+    // remember this listing for future duplicate checks
+    seen.unshift({ text, ts: now });
+    saveJSON(SEEN_KEY, seen.slice(0, 50));
+    return { pts, label };
+  }
+
+  function scoreAccountAge(ageRaw) {
+    if (ageRaw === '' || ageRaw === null || isNaN(ageRaw)) return { pts: 0, label: null, isNew: false };
+    const age = Number(ageRaw);
+    if (age < 3) return { pts: 20, label: `brand-new seller account (${age} day(s) old)`, isNew: true };
+    if (age < 7) return { pts: 15, label: `very new seller account (${age} days old)`, isNew: true };
+    if (age < 14) return { pts: 10, label: `new seller account (${age} days old)`, isNew: true };
+    return { pts: 0, label: null, isNew: false };
+  }
+
+  function scoreReviews(countRaw) {
+    if (countRaw === '' || countRaw === null || isNaN(countRaw)) return { pts: 0, label: null };
+    const count = Number(countRaw);
+    if (count === 0) return { pts: 25, label: 'seller has zero reviews on file' };
+    if (count <= 2) return { pts: 10, label: `seller has very few reviews (${count})` };
+    return { pts: 0, label: null };
+  }
+
+  function scoreNewAccountPayment(text, isNewAccount) {
+    const hit = PAYMENT_FLAGS.find(f => f.pattern.test(text));
+    if (!hit) return { pts: 0, label: null };
+    if (isNewAccount) return { pts: 25, label: `new account ${hit.label} before handoff` };
+    return { pts: 10, label: hit.label };
+  }
+
+  function riskTier(score) {
+    if (score >= 60) return 'high';
+    if (score >= 30) return 'medium';
+    return 'low';
+  }
+
   function checkListing() {
-    const text = document.getElementById('listingInput').value;
+    const text = document.getElementById('listingInput').value.trim();
+    const ageRaw = document.getElementById('accountAge').value;
+    const reviewRaw = document.getElementById('reviewCount').value;
     const result = document.getElementById('result');
 
-    if (!text.trim()) {
+    if (!text) {
       result.className = 'show';
-      result.textContent = 'Paste some listing text first.';
+      result.innerHTML = 'Paste some listing text first.';
       return;
     }
 
-    const hits = RED_FLAGS.filter(f => f.pattern.test(text));
+    const now = Date.now();
+    const age = scoreAccountAge(ageRaw);
+    const reviews = scoreReviews(reviewRaw);
+    const dup = scoreDuplicate(text, now);
+    const combo = scoreNewAccountPayment(text, age.isNew);
 
-    if (hits.length === 0) {
-      result.className = 'show risk-low';
-      result.textContent = '✅ No common scam patterns detected. Still verify the seller and use buyer protection.';
+    const signals = [
+      dup.label && { pts: dup.pts, label: dup.label },
+      combo.label && { pts: combo.pts, label: combo.label },
+      age.label && { pts: age.pts, label: age.label },
+      reviews.label && { pts: reviews.pts, label: reviews.label },
+    ].filter(Boolean);
+
+    const score = Math.min(100, dup.pts + combo.pts + age.pts + reviews.pts);
+    const tier = riskTier(score);
+    const tierName = tier === 'high' ? 'High risk' : tier === 'medium' ? 'Medium risk' : 'Low risk';
+
+    const otherHits = OTHER_FLAGS.filter(f => f.pattern.test(text));
+
+    let html = `
+      <div class="score-head">
+        <span class="score-value">${score}<span style="font-size:13px;color:var(--text-dim);">/100</span></span>
+        <span class="risk-pill ${tier}">${tierName}</span>
+      </div>
+      <div class="score-bar"><div class="score-bar-fill ${tier}" style="width:${score}%;"></div></div>
+    `;
+
+    if (signals.length) {
+      html += '<ul class="signal-list">' + signals.map(s =>
+        `<li><span class="pts">+${s.pts}</span><span>${s.label}</span></li>`
+      ).join('') + '</ul>';
     } else {
-      result.className = 'show risk-high';
-      result.innerHTML = '⚠️ ' + hits.length + ' potential red flag(s) found: ' +
-        hits.map(h => h.label).join(', ') + '.';
+      html += '<ul class="signal-list"><li><span class="pts">+0</span><span>None of the four scored signals were triggered.</span></li></ul>';
+    }
+
+    if (otherHits.length) {
+      html += '<div class="other-flags">Also noticed (not scored): ' + otherHits.map(h => h.label).join(', ') + '.</div>';
+    }
+
+    result.className = 'show';
+    result.innerHTML = html;
+
+    if (score >= FLAG_THRESHOLD) {
+      addToQueue({ score, snippet: text.slice(0, 90), signals: signals.map(s => s.label), ts: now });
     }
   }
+
+  function addToQueue(entry) {
+    const queue = loadJSON(QUEUE_KEY, []);
+    queue.unshift(entry);
+    saveJSON(QUEUE_KEY, queue.slice(0, 50));
+    renderQueue();
+  }
+
+  function clearQueue() {
+    saveJSON(QUEUE_KEY, []);
+    renderQueue();
+  }
+
+  function renderQueue() {
+    const queue = loadJSON(QUEUE_KEY, []).slice().sort((a, b) => b.score - a.score);
+    const empty = document.getElementById('queueEmpty');
+    const table = document.getElementById('queueTable');
+    const body = document.getElementById('queueBody');
+    const actions = document.getElementById('queueActions');
+
+    if (!queue.length) {
+      empty.style.display = 'block';
+      table.style.display = 'none';
+      actions.style.display = 'none';
+      return;
+    }
+
+    empty.style.display = 'none';
+    table.style.display = 'table';
+    actions.style.display = 'flex';
+
+    body.innerHTML = queue.map(q => {
+      const tier = riskTier(q.score);
+      const color = tier === 'high' ? 'var(--danger)' : tier === 'medium' ? 'var(--warn)' : 'var(--safe)';
+      const bg = tier === 'high' ? 'rgba(255,92,115,0.15)' : tier === 'medium' ? 'rgba(245,166,35,0.15)' : 'rgba(53,211,153,0.15)';
+      const date = new Date(q.ts).toLocaleString();
+      return `
+        <tr>
+          <td><span class="queue-score" style="color:${color};background:${bg};">${q.score}</span></td>
+          <td>${escapeHtml(q.snippet)}${q.snippet.length >= 90 ? '…' : ''}</td>
+          <td>${q.signals.map(escapeHtml).join('<br>')}</td>
+          <td>${date}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  renderQueue();
 </script>
 
 </body>
